@@ -20,3 +20,5 @@ Config/testthat/edition: 3
 Imports: 
     maftools
 biocViews:
+URL: https://github.com/selkamand/utilitybeltmaf
+BugReports: https://github.com/selkamand/utilitybeltmaf/issues
