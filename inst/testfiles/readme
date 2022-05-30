@@ -1,0 +1,1 @@
+tabix -h ftp://ftp-trace.ncbi.nih.gov/1000genomes/ftp/release/20101123/interim_phase1_release/ALL.chr12.phase1.projectConsensus.genotypes.vcf.gz 12:10000-110000 > testVCF100genomes.vcf
