@@ -9,7 +9,7 @@
 #'
 #' @examples
 #'
-convert_vcf_to_maf <- function(path_to_vcf, sampleid = NULL, verbose = TRUE){
+convert_vcf_to_maf2 <- function(path_to_vcf, sampleid = NULL, verbose = TRUE){
   vcf_df = vcf_read(path_to_vcf)
   vcf_is_multisample = check_vcf_is_multisample(vcf_df)
 
@@ -47,7 +47,7 @@ vcf_get_variant_allele_frequency <- function(){
   return("")
 }
 
-single_sample_vcf_to_maf <- function(vcf_df, sample_id){
+single_sample_vcf_to_maf2 <- function(vcf_df, sample_id){
   maf_df <- data.frame(
     Tumor_Sample_Barcode = sample_id,
     Hugo_Symbol = vcf_get_hugo_symbols(),
@@ -69,7 +69,7 @@ vcf_guess_sample_name_from_filepath <- function(filepath){
   return(sample_name)
 }
 
-vcf_read <- function(path_to_file, sampleid = NULL, verbose = TRUE){
+vcf_read2 <- function(path_to_file, sampleid = NULL, verbose = TRUE){
   utilitybeltassertions::assert_files_exist(path_to_file)
 
   vcf_df = data.table::fread(path_to_file)
@@ -77,7 +77,7 @@ vcf_read <- function(path_to_file, sampleid = NULL, verbose = TRUE){
   return(vcf_df)
 }
 
-vcf_assert_valid <- function(vcf_df, multi_sample_vcfs_allowed = TRUE){
+vcf_assert_valid2 <- function(vcf_df, multi_sample_vcfs_allowed = TRUE){
   valid_vcf_fields = c('#CHROM', "POS", "REF", "ALT", "QUAL","FILTER", "INFO", "FORMAT")
   utilitybeltassertions::assert_names_include(vcf_df, valid_vcf_fields)
 
@@ -86,18 +86,76 @@ vcf_assert_valid <- function(vcf_df, multi_sample_vcfs_allowed = TRUE){
   }
 }
 
-check_vcf_is_multisample <- function(vcf_df){
+check_vcf_is_multisample2 <- function(vcf_df){
   valid_vcf_fields = c('#CHROM', "POS", "REF", "ALT", "QUAL","FILTER", "INFO", "FORMAT")
   ncol(vcf_df) > length(valid_vcf_fields)
   vcf_is_multisample = all((length(valid_vcf_fields)):ncol(vcf_df)==which(! names(vcf_df) %in% valid_vcf_fields))
   return(vcf_is_multisample)
 }
 
-vcf_multisample_get_sample_ids <- function(vcf_df){
+vcf_multisample_get_sample_ids2 <- function(vcf_df){
 
 }
 
 
+testfile=system.file(package="utilitybeltmaf","inst/testfiles/mysample.singlesample.annotated.vcf")
+vcf_read <- function(path_to_vcf){
+  VariantAnnotation::readVcf(path_to_vcf)
+}
 
+vcf_assert_vep_annotated <- function(collapsed_vcf, verbose = TRUE){
+  assertthat::assert_that(class(collapsed_vcf) == "CollapsedVCF")
+  assertthat::assert_that("CSQ" %in% names(collapsed_vcf@info), msg = "\u2718 Could not find VEP annotation (CSQ) in info field. Please ensure VCF is VEP annotated ")
+  if(verbose) message("\u2714 VCF is VEP annotated ")
+}
+
+check_vcf_is_multisample <- function(collapsed_vcf){
+  samplenames = VariantAnnotation::samples(VariantAnnotation::header(collapsed_vcf))
+  if(length(samplenames) > 0)
+    return(FALSE)
+  else
+    return(TRUE)
+}
+
+single_sample_vcf_to_maf <- function(collapsed_vcf, sample_id){
+  maf_df <- data.frame(
+    Tumor_Sample_Barcode = sample_id,
+    Hugo_Symbol = vcf_get_hugo_symbols(),
+    #Chromosome = VariantAnnotation::seqinfo(collapsed_vcf),
+    Start_Position = collapsed_vcf[['POS']],
+    End_Position = collapsed_vcf[['POS']],
+    Reference_Allele = collapsed_vcf[['REF']],
+    Tumor_Seq_Allele2 = collapsed_vcf[['ALT']],
+    Variant_Classification = vcf_get_variant_classification(),
+    Variant_Type = vcf_get_variant_type(),
+    AAchange = vcf_get_amino_acid_change(),
+    VAF = vcf_get_variant_allele_frequency()
+  )
+  return(maf_df)
+}
+
+#' VCF2MAF
+#'
+#' Convert a vcf (or vcfs) to a MAF file
+#'
+#' @param path_to_vcf
+#'
+#' @return MAF dataframe
+#' @export
+#'
+convert_vcf_to_maf <- function(path_to_vcf, sampleid = NULL, verbose = TRUE){
+  collapsed_vcf = vcf_read(path_to_vcf)
+  #vcf_df = vcf_read(path_to_vcf)
+  vcf_is_multisample = check_vcf_is_multisample(collapsed_vcf)
+
+  if(!vcf_is_multisample){
+    if(is.null(sampleid)){
+      sampleid = vcf_guess_sample_name_from_filepath(path_to_vcf)
+      if(verbose) message("Guessing Samplename from filepath: ", sampleid)
+    }
+    maf = single_sample_vcf_to_maf(collapsed_vcf, sampleid)
+    return(maf)
+  }
+}
 # vcf_path = system.file("testfiles/mysample.singlesample.vcf", package = "utilitybeltmaf")
 # convert_vcf_to_maf(system.file("testfiles/mysample.singlesample.vcf", package = "utilitybeltmaf"))
