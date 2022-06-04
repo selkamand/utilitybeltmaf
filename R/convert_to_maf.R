@@ -7,8 +7,6 @@
 #' @return MAF dataframe
 #' @export
 #'
-#' @examples
-#'
 convert_vcf_to_maf2 <- function(path_to_vcf, sampleid = NULL, verbose = TRUE){
   vcf_df = vcf_read(path_to_vcf)
   vcf_is_multisample = check_vcf_is_multisample(vcf_df)
@@ -112,24 +110,25 @@ vcf_assert_vep_annotated <- function(collapsed_vcf, verbose = TRUE){
 check_vcf_is_multisample <- function(collapsed_vcf){
   samplenames = VariantAnnotation::samples(VariantAnnotation::header(collapsed_vcf))
   if(length(samplenames) > 0)
-    return(FALSE)
-  else
     return(TRUE)
+  else
+    return(FALSE)
 }
 
 single_sample_vcf_to_maf <- function(collapsed_vcf, sample_id){
+  #browser()
   maf_df <- data.frame(
     Tumor_Sample_Barcode = sample_id,
-    Hugo_Symbol = vcf_get_hugo_symbols(),
-    #Chromosome = VariantAnnotation::seqinfo(collapsed_vcf),
-    Start_Position = collapsed_vcf[['POS']],
-    End_Position = collapsed_vcf[['POS']],
-    Reference_Allele = collapsed_vcf[['REF']],
-    Tumor_Seq_Allele2 = collapsed_vcf[['ALT']],
-    Variant_Classification = vcf_get_variant_classification(),
-    Variant_Type = vcf_get_variant_type(),
-    AAchange = vcf_get_amino_acid_change(),
-    VAF = vcf_get_variant_allele_frequency()
+    #Hugo_Symbol = vcf_get_hugo_symbols(collapsed_vcf),
+    Chromosome = as.character(collapsed_vcf@rowRanges@seqnames),
+    Start_Position = collapsed_vcf@rowRanges@ranges@start,
+    End_Position = as.data.frame(collapsed_vcf@rowRanges@ranges)[["end"]],
+    Reference_Allele = sapply(VariantAnnotation::ref(collapsed_vcf), FUN = function(.x) paste0(.x, collapse = ",")),
+    Tumor_Seq_Allele2 = sapply(VariantAnnotation::alt(collapsed_vcf), FUN = function(.x) paste0(.x, collapse = ","))
+    #Variant_Classification = vcf_get_variant_classification(),
+    #Variant_Type = vcf_get_variant_type(),
+    #AAchange = vcf_get_amino_acid_change(),
+    #VAF = vcf_get_variant_allele_frequency()
   )
   return(maf_df)
 }
@@ -144,6 +143,7 @@ single_sample_vcf_to_maf <- function(collapsed_vcf, sample_id){
 #' @export
 #'
 convert_vcf_to_maf <- function(path_to_vcf, sampleid = NULL, verbose = TRUE){
+  #browser()
   collapsed_vcf = vcf_read(path_to_vcf)
   #vcf_df = vcf_read(path_to_vcf)
   vcf_is_multisample = check_vcf_is_multisample(collapsed_vcf)
@@ -157,5 +157,6 @@ convert_vcf_to_maf <- function(path_to_vcf, sampleid = NULL, verbose = TRUE){
     return(maf)
   }
 }
-# vcf_path = system.file("testfiles/mysample.singlesample.vcf", package = "utilitybeltmaf")
+#vcf_path = system.file("testfiles/mysample.singlesample.vcf", package = "utilitybeltmaf")
 # convert_vcf_to_maf(system.file("testfiles/mysample.singlesample.vcf", package = "utilitybeltmaf"))
+

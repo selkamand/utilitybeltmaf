@@ -4,7 +4,7 @@
 \alias{convert_vcf_to_maf}
 \title{VCF2MAF}
 \usage{
-convert_vcf_to_maf(path_to_vcf)
+convert_vcf_to_maf(path_to_vcf, sampleid = NULL, verbose = TRUE)
 }
 \arguments{
 \item{path_to_vcf}{}
@@ -14,7 +14,4 @@ MAF dataframe
 }
 \description{
 Convert a vcf (or vcfs) to a MAF file
-}
-\examples{
-
 }
