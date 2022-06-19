@@ -32,3 +32,38 @@ test_that("check_vcf_is_annotated works for non-annotated VCFs", {
   vcf = vcf_read(path_to_vcf)
   expect_false(vcf_is_vep_annotated(vcf))
 })
+
+test_that("vcf_describe runs successfully", {
+  path_to_vcf = system.file(package="utilitybeltmaf","inst/testfiles/mysample.singlesample.annotated.vcf")
+  vcf = vcf_read(path_to_vcf)
+  expect_error(vcf_describe(vcf), NA)
+})
+
+test_that("vcf_guess_sample_name_from_filepath works", {
+  sample_name_to_path_mappings <- c(
+    "mysample" = "/root/mysample.singlesample.annotated.vcf",
+    "mysample" = "mysample.singlesample.annotated.vcf",
+    "my_sample" = "my_sample.vep.vcf",
+    "my-sample" = "my-sample.vep.vcf"
+  )
+
+  expect_equal(
+    object = vcf_guess_sample_name_from_filepath(filepath = sample_name_to_path_mappings),
+    expected = names(sample_name_to_path_mappings)
+  )
+})
+
+test_that("vcf_is_multiallelic works with non-multiallelic vcfs", {
+  path_to_vcf = system.file(package="utilitybeltmaf","inst/testfiles/mysample.singlesample.vcf")
+  vcf = vcf_read(path_to_vcf)
+  expect_false(vcf_is_multiallelic(vcf))
+})
+
+test_that("vcf_is_multiallelic works with multiallelic vcfs", {
+  path_to_vcf = system.file(package="utilitybeltmaf","inst/testfiles/mysample.singlesample.multialt.vcf")
+  vcf = vcf_read(path_to_vcf)
+  #browser()
+  expect_true(vcf_is_multiallelic(vcf))
+})
+
+

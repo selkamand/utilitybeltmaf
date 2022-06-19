@@ -32,6 +32,11 @@ vcf = vcf_read(path_to_vcf)
 Step 2: learn some info about your vcf
 
 ```{r}
-vcf |>
-  vcf_describe()
+vcf_describe(vcf)
 ```
+
+Step 3: Convert To VCF
+```{r}
+vcf_convert_to_maf(path_to_vcf = path_to_vcf)
+```
+
