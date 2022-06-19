@@ -1,0 +1,37 @@
+---
+title: "QuickStart"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{QuickStart}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+# Load Libraries 
+```{r setup}
+library(utilitybeltmaf)
+```
+
+
+# VCF2MAF
+
+Step 1: read in vcf
+
+```{r}
+path_to_vcf = system.file(package="utilitybeltmaf","inst/testfiles/mysample.singlesample.annotated.vcf")
+vcf = vcf_read(path_to_vcf)
+```
+
+Step 2: learn some info about your vcf
+
+```{r}
+vcf |>
+  vcf_describe()
+```

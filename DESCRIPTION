@@ -15,6 +15,8 @@ LazyData: true
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.0
 Suggests: 
+    knitr,
+    rmarkdown,
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
 Imports: 
@@ -24,5 +26,6 @@ Imports:
 biocViews:
 URL: https://github.com/selkamand/utilitybeltmaf
 BugReports: https://github.com/selkamand/utilitybeltmaf/issues
-Remotes:  
+Remotes: 
     selkamand/utilitybeltassertions
+VignetteBuilder: knitr
