@@ -1,0 +1,12 @@
+##fileformat=VCFv4.0
+##source=BCM:SNPTools:hapfuse
+##reference=1000Genomes-NCBI37
+##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">
+##FORMAT=<ID=AP,Number=2,Type=Float,Description="Allelic Probability, P(Allele=1|Haplotype)">
+##VEP="v101" time="2022-06-06 10:36:56" db="homo_sapiens_core_101_38@ensembldb.ensembl.org" ensembl-funcgen=101.b918a49 ensembl=101.856c8e8 ensembl-variation=101.819eef2 ensembl-io=101.943b6c2 assembly="GRCh38.p13" gencode="GENCODE 35" genebuild="2014-07"
+##INFO=<ID=CSQ,Number=.,Type=String,Description="Consequence annotations from Ensembl VEP. Format: Allele|Consequence|IMPACT|SYMBOL|Gene|Feature_type|Feature|BIOTYPE|EXON|INTRON|HGVSc|HGVSp|cDNA_position|CDS_position|Protein_position|Amino_acids|Codons|Existing_variation|DISTANCE|STRAND|FLAGS|SYMBOL_SOURCE|HGNC_ID">
+#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT
+12	60076	.	A	C,G	100	PASS	CSQ=C|intergenic_variant|MODIFIER||||||||||||||||||||,G|intergenic_variant|MODIFIER||||||||||||||||||||	GT:AP
+12	60252	.	A	G	100	PASS	CSQ=G|intergenic_variant|MODIFIER||||||||||||||||||||	GT:AP
+12	60317	.	C	T	100	PASS	CSQ=T|intergenic_variant|MODIFIER||||||||||||||||||||	GT:AP
+12	60344	.	C	A	100	PASS	CSQ=A|intergenic_variant|MODIFIER||||||||||||||||||||	GT:AP
