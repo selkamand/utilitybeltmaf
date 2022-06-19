@@ -8,14 +8,18 @@ vcf_read <- function(path_to_vcf){
   VariantAnnotation::readVcf(path_to_vcf)
 }
 
-vcf_assert_collapsedvcf <- function(){
+vcf_assert_collapsedvcf <- function(collapsed_vcf){
   assertthat::assert_that(class(collapsed_vcf) == "CollapsedVCF", msg = "Supplied VCF ")
 }
 
 vcf_assert_vep_annotated <- function(collapsed_vcf, verbose = TRUE){
-  vcf_assert_collapsedvcf()
+  vcf_assert_collapsedvcf(collapsed_vcf)
   assertthat::assert_that(vcf_is_vep_annotated(collapsed_vcf), msg = "\u2718 Could not find VEP annotation (CSQ) in info field. Please ensure VCF is VEP annotated ")
   if(verbose) message("\u2714 VCF is VEP annotated ")
+}
+
+vcf_assert_biallelic <- function(collapsed_vcf){
+  assertthat::assert_that(vcf_is_biallelic(collapsed_vcf), msg = "\u2718 VCF is not biallelic. It has multiple alternative alleles for at least one mutation. Please normalize VCF then retry")
 }
 
 vcf_is_vep_annotated <-function(collapsed_vcf){
@@ -32,8 +36,27 @@ vcf_count_samples <- function(collapsed_vcf){
   return(length(samplenames))
 }
 
-vcf_is_multiallelic <- function(collapsed_vcf){
-  length(VariantAnnotation::alt(collapsed_vcf)) < length(unlist(VariantAnnotation::alt(collapsed_vcf)))
+#' Is VCF Biallelic?
+#'
+#' A biallelic VCF has exactly 2 alleles represented per line in the VCF. (1) Ref allele. (2) Alternative allele.
+#'
+#'
+#' Not all VCFs are bi-allelic. Some have multiple alt alleles at one position. For example, sometimes if the VCF is multi-sample 2 alt alleles might be given to two possible alleles present in different samples.
+#' In these multi-allelic VCFS, the genotype field then usually describes what allele is present in each sample.
+#' In virtually all cases, multi-allelic VCFs can be simplified to biallelic VCFs through 'normalisation' (e.g. using bcftools norm) without losing information.
+#'
+#'
+#' @param collapsed_vcf result of [vcf_read()]
+#'
+#' @return TRUE if each entry in VCF has no more than 1 Alt allele. otherwise returns FALSE (boolean)
+#' @export
+#'
+vcf_is_biallelic <- function(collapsed_vcf){
+  length(VariantAnnotation::alt(collapsed_vcf)) == length(unlist(VariantAnnotation::alt(collapsed_vcf)))
+}
+
+vcf_count_variants <- function(collapsed_vcf){
+  length(VariantAnnotation::ref(collapsed_vcf))
 }
 
 vcf_describe <- function(collapsed_vcf){
@@ -41,7 +64,8 @@ vcf_describe <- function(collapsed_vcf){
     multisample = vcf_is_multisample(collapsed_vcf),
     #samples = vcf_count_samples(collapsed_vcf),
     vep_annotated = vcf_is_vep_annotated(collapsed_vcf),
-    multiallelic = vcf_is_multiallelic(collapsed_vcf)
+    biallelic = vcf_is_biallelic(collapsed_vcf),
+    n_variants = vcf_count_variants(collapsed_vcf)
   )
 }
 
@@ -49,13 +73,13 @@ single_sample_vcf_to_maf <- function(collapsed_vcf, sample_id){
   #browser()
   maf_df <- data.frame(
     Tumor_Sample_Barcode = sample_id,
-    #Hugo_Symbol = vcf_get_hugo_symbols(collapsed_vcf),
+    Hugo_Symbol = vcf_parse_vep_annotation(collapsed_vcf = collapsed_vcf,field_to_extract =  "SYMBOL"),
     Chromosome = as.character(collapsed_vcf@rowRanges@seqnames),
     Start_Position = collapsed_vcf@rowRanges@ranges@start,
     End_Position = as.data.frame(collapsed_vcf@rowRanges@ranges)[["end"]],
     Reference_Allele = sapply(VariantAnnotation::ref(collapsed_vcf), FUN = function(.x) paste0(.x, collapse = ",")),
     Tumor_Seq_Allele2 = sapply(VariantAnnotation::alt(collapsed_vcf), FUN = function(.x) paste0(.x, collapse = ","))
-    #Variant_Classification = vcf_get_variant_classification(),
+    #AAchange = vcf_parse_vep_annotation(collapsed_vcf, "Amino_acids")
     #Variant_Type = vcf_get_variant_type(),
     #AAchange = vcf_get_amino_acid_change(),
     #VAF = vcf_get_variant_allele_frequency()
