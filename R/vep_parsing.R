@@ -1,16 +1,20 @@
 biotype_rankings <- function(){
-  read.csv(
-    system.file(package = "utilitybeltmaf","required_assets/biotype_ranking"),
-    sep = "\t",
-    header = TRUE
+  dplyr::tibble(
+    utils::read.csv(
+      system.file(package = "utilitybeltmaf","required_assets/biotype_ranking"),
+      sep = "\t",
+      header = TRUE
+    )
   )
 }
 
 effect_rankings <- function(){
-  read.csv(
-    system.file(package = "utilitybeltmaf","required_assets/effect_ranking"),
-    sep = "\t",
-    header = TRUE
+  dplyr::tibble(
+    utils::read.csv(
+      system.file(package = "utilitybeltmaf","required_assets/effect_ranking"),
+      sep = "\t",
+      header = TRUE
+    )
   )
 }
 
@@ -37,7 +41,7 @@ effect_rankings <- function(){
 #'
 #' @examples
 vcf_parse_vep_annotation <- function(collapsed_vcf, field_to_extract){
-  browser()
+  #browser()
   vcf_assert_collapsedvcf(collapsed_vcf)
   vcf_assert_vep_annotated(collapsed_vcf, verbose = FALSE)
   vcf_assert_biallelic(collapsed_vcf)
@@ -63,6 +67,18 @@ vcf_parse_vep_annotation <- function(collapsed_vcf, field_to_extract){
   )
 
   # add code to rank vep effects by biotype then  and effect then transcript id....see description roxygen comment for more instructions on
+
+  biotype_ranking = biotype_rankings()
+  effect_rankings = effect_rankings()
+
+  # annotate vep_df with biotype, effect, and transcript length rankings
+  vep_df |>
+    mutate(
+      biotype_priority = biotype_rankings[["priority"]][match(BIOTYPE, biotype_rankings[["biotype"]])],
+      effect_priority = effect_rankings[["priority"]][match(Consequence, effect_rankings[["effect"]])],
+      transcript_length = vep_df[["cDNA_position"]] # How does vcf2maf infer transcript length from this? - higher values mean cdna start is further up ... could suggest logner OR that the transcript
+      )
+
 
   browser()
 
